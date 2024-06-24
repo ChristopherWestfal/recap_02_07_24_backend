@@ -46,8 +46,6 @@ public class TodoService {
     }
 
     public void deleteTodo(String id) {
-        if(todoRepository.existsById(id)){
-            todoRepository.delete(todoRepository.findById(id).orElseThrow());
-        }
+        todoRepository.delete(todoRepository.findById(id).orElseThrow());
     }
 }
