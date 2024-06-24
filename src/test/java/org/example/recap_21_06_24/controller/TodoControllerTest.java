@@ -16,7 +16,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.jsonPath;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -82,7 +85,28 @@ class TodoControllerTest {
     }
 
     @Test
-    void updateTodo() {
+    void updateTodo_whenCalledWithId123AndTodoWithoutId_shouldUpdateTodoWithId123() throws Exception {
+        Todo savedTodo = new Todo("123", "Einkaufen", Status.OPEN);
+        todoRepository.save(savedTodo);
+
+        ToDoWithoutId todoWithoutId = new ToDoWithoutId("Einkaufen", Status.IN_PROGRESS);
+
+        mockMvc.perform(MockMvcRequestBuilders.put("/api/todo/{id}", "123", todoWithoutId)
+                .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                
+                                {
+                                "description": "Einkaufen",
+                                "status": "IN_PROGRESS"
+                                }
+                                
+                                """))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+
+        Optional<Todo> foundTodoById = todoRepository.findById("123");
+        assertTrue(foundTodoById.isPresent());
+        assertEquals(todoWithoutId.description(), foundTodoById.orElseThrow().description());
+        assertEquals(todoWithoutId.status(), foundTodoById.orElseThrow().status());
     }
 
     @Test
